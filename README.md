@@ -1,12 +1,12 @@
-# DuckxStreet Map Demo
+# DuckxStreet Globe Demo
 
-This repository contains a simple static web page that displays an interactive 2D world map using [D3](https://d3js.org/).
+This repository contains a static web page that showcases an interactive 3D globe built with [Globe.gl](https://github.com/vasturiano/globe.gl) and Three.js. Clicking on countries that have Instagram posts opens a modal listing those posts.
 
 ## Usage
 
-Open `index.html` in a modern web browser with internet access. The map allows you to click on highlighted countries to display a modal with placeholder Instagram posts. Click on a post to open the original link in a new tab.
+Open `index.html` in a modern web browser with internet access. The globe can be rotated and zoomed. Countries with available posts are highlighted. Selecting a country opens a modal displaying the corresponding media thumbnails and captions. Clicking a thumbnail navigates to the original Instagram post in a new tab.
 
-The demo uses Tailwind CSS for styling and a small hard-coded dataset located in `posts.js`.
+All media data is stored locally in `data.json` and loaded at runtime. Styling is done with Tailwind CSS.
 
 ## Social Media
 
