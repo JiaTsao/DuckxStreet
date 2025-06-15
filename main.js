@@ -1,43 +1,51 @@
 const worldUrl = 'https://unpkg.com/world-atlas@2/countries-110m.json';
-const earthTexture = 'https://unpkg.com/three-globe/example/img/earth-dark.jpg';
 
-const Globe = window.Globe; // from globe.gl CDN
+const width = window.innerWidth;
+const height = window.innerHeight;
 
-const world = Globe()
-  .globeImageUrl(earthTexture)
-  .backgroundColor('#000')
-  .showAtmosphere(true)
-  .atmosphereColor('#3a228a')
-  .atmosphereAltitude(0.25);
+const svg = d3.select('#map-container')
+  .append('svg')
+  .attr('width', width)
+  .attr('height', height)
+  .attr('viewBox', `0 0 ${width} ${height}`);
 
-const container = document.getElementById('globe-container');
-container.appendChild(world());
+const projection = d3.geoNaturalEarth1()
+  .scale(width / 6.3)
+  .translate([width / 2, height / 2]);
+
+const path = d3.geoPath().projection(projection);
 
 fetch(worldUrl)
   .then(res => res.json())
   .then(worldData => {
-    const countries = window.topojson.feature(worldData, worldData.objects.countries).features;
-    world
-      .polygonsData(countries)
-      .polygonCapColor(() => 'rgba(255, 255, 255, 0.1)')
-      .polygonSideColor(() => 'rgba(0, 100, 0, 0.15)')
-      .polygonStrokeColor(() => '#111')
-      .onPolygonClick(country => showCountryPosts(country));
+    const countries = topojson.feature(worldData, worldData.objects.countries).features;
 
-    // Add markers for countries with posts
+    svg.append('g')
+      .selectAll('path')
+      .data(countries)
+      .enter().append('path')
+      .attr('d', path)
+      .attr('fill', '#333')
+      .attr('stroke', '#111')
+      .on('click', d => showCountryPosts(d));
+
     const markers = postsData.reduce((acc, post) => {
       acc[post.country] = true;
       return acc;
     }, {});
-    const markerFeatures = countries.filter(c => markers[c.properties.name]);
-    world
-      .pointsData(markerFeatures)
-      .pointAltitude(0.1)
-      .pointColor(() => 'orange');
+
+    svg.append('g')
+      .selectAll('circle')
+      .data(countries.filter(c => markers[c.properties.name]))
+      .enter().append('circle')
+      .attr('cx', d => path.centroid(d)[0])
+      .attr('cy', d => path.centroid(d)[1])
+      .attr('r', 5)
+      .attr('fill', 'orange');
   });
 
-function showCountryPosts(countryFeature) {
-  const name = countryFeature.properties.name;
+function showCountryPosts(feature) {
+  const name = feature.properties.name;
   const posts = getPostsByCountry(name);
   if (!posts.length) return;
 
@@ -45,7 +53,7 @@ function showCountryPosts(countryFeature) {
   const title = document.getElementById('modal-title');
   const content = document.getElementById('modal-content');
 
-  title.textContent = countryFeature.properties.name;
+  title.textContent = name;
   content.innerHTML = '';
   posts.forEach(p => {
     const item = document.createElement('div');
