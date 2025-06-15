@@ -1,0 +1,16 @@
+[
+  {
+    "countryCode": "TW",
+    "thumbnailUrl": "https://via.placeholder.com/150",
+    "mediaType": "image",
+    "igPostUrl": "https://www.instagram.com/p/duckxstreet_sample/",
+    "caption": "Hello from DuckxStreet in Taiwan!"
+  },
+  {
+    "countryCode": "US",
+    "thumbnailUrl": "https://via.placeholder.com/150",
+    "mediaType": "image",
+    "igPostUrl": "https://www.instagram.com/p/example_us/",
+    "caption": "Greetings from the USA."
+  }
+]

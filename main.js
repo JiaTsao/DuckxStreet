@@ -1,76 +1,54 @@
-const worldUrl = 'https://unpkg.com/world-atlas@2/countries-110m.json';
+let postsByCountry = {};
+let countryFeatures = [];
 
-const width = window.innerWidth;
-const height = window.innerHeight;
+async function loadData() {
+  const [posts, countries] = await Promise.all([
+    fetch('data.json').then(r => r.json()),
+    fetch('https://unpkg.com/three-globe/example/datasets/ne_110m_admin_0_countries.geojson').then(r => r.json())
+  ]);
 
-const svg = d3.select('#map-container')
-  .append('svg')
-  .attr('width', width)
-  .attr('height', height)
-  .attr('viewBox', `0 0 ${width} ${height}`);
-
-const projection = d3.geoNaturalEarth1()
-  .scale(width / 6.3)
-  .translate([width / 2, height / 2]);
-
-const path = d3.geoPath().projection(projection);
-
-fetch(worldUrl)
-  .then(res => res.json())
-  .then(worldData => {
-    const countries = topojson.feature(worldData, worldData.objects.countries).features;
-
-    svg.append('g')
-      .selectAll('path')
-      .data(countries)
-      .enter().append('path')
-      .attr('d', path)
-      .attr('fill', '#333')
-      .attr('stroke', '#111')
-      .on('click', d => showCountryPosts(d));
-
-    const markers = postsData.reduce((acc, post) => {
-      acc[post.country] = true;
-      return acc;
-    }, {});
-
-    svg.append('g')
-      .selectAll('circle')
-      .data(countries.filter(c => markers[c.properties.name]))
-      .enter().append('circle')
-      .attr('cx', d => path.centroid(d)[0])
-      .attr('cy', d => path.centroid(d)[1])
-      .attr('r', 5)
-      .attr('fill', 'orange');
-  });
-
-function showCountryPosts(feature) {
-  const name = feature.properties.name;
-  const posts = getPostsByCountry(name);
-  if (!posts.length) return;
-
-  const modal = document.getElementById('modal');
-  const title = document.getElementById('modal-title');
-  const content = document.getElementById('modal-content');
-
-  title.textContent = name;
-  content.innerHTML = '';
   posts.forEach(p => {
-    const item = document.createElement('div');
-    item.className = 'cursor-pointer';
-    item.innerHTML = `
-      <img src="${p.thumbnail}" alt="${p.caption}" class="w-full h-auto rounded" />
-      <p class="mt-2 text-sm">${p.caption}</p>
-    `;
-    item.addEventListener('click', () => {
-      window.open(p.url, '_blank');
-    });
-    content.appendChild(item);
+    if (!postsByCountry[p.countryCode]) postsByCountry[p.countryCode] = [];
+    postsByCountry[p.countryCode].push(p);
   });
 
-  modal.classList.remove('hidden');
+  countryFeatures = countries.features;
+  initGlobe();
 }
 
-document.getElementById('close-modal').addEventListener('click', () => {
-  document.getElementById('modal').classList.add('hidden');
-});
+function initGlobe() {
+  const gData = countryFeatures;
+
+  const globe = Globe()
+    (document.getElementById('globe-container'))
+    .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-dark.jpg')
+    .backgroundColor('#000000')
+    .polygonsData(gData)
+    .polygonAltitude(0.06)
+    .polygonCapColor(feat => postsByCountry[feat.properties.ISO_A2] ? 'rgba(255,165,0,0.8)' : 'rgba(200,200,200,0.2)')
+    .polygonSideColor(() => 'rgba(0,100,0,0.15)')
+    .onPolygonClick(feat => {
+      const code = feat.properties.ISO_A2;
+      if (postsByCountry[code]) {
+        openModal(feat.properties.NAME, postsByCountry[code]);
+      }
+    });
+
+  const markers = gData
+    .filter(f => postsByCountry[f.properties.ISO_A2])
+    .map(f => {
+      const [lng, lat] = d3.geoCentroid(f);
+      return { lat, lng, code: f.properties.ISO_A2 };
+    });
+
+  globe.pointsData(markers)
+    .pointAltitude(0.1)
+    .pointRadius(0.25)
+    .pointColor(() => 'orange')
+    .onPointClick(pt => {
+      const feat = gData.find(f => f.properties.ISO_A2 === pt.code);
+      if (feat) openModal(feat.properties.NAME, postsByCountry[pt.code]);
+    });
+}
+
+loadData();
