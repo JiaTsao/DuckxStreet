@@ -7,6 +7,7 @@ This repository contains a static web page that showcases an interactive 3D glob
 Open `index.html` in a modern web browser with internet access. The globe can be rotated and zoomed. Countries with available posts are highlighted. Selecting a country opens a modal displaying the corresponding media thumbnails and captions. Clicking a thumbnail navigates to the original Instagram post in a new tab.
 
 All media data is stored locally in `data.json` and loaded at runtime. Styling is done with Tailwind CSS.
+When network access is unavailable, the page falls back to the local files in the `libs/` directory. You can change the `libsBaseUrl` global variable in `index.html` if you host the libraries elsewhere.
 
 ## Social Media
 
