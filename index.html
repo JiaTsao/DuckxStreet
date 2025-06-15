@@ -5,10 +5,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>DuckxStreet Globe</title>
   <link rel="stylesheet" href="styles.css">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/three@0.152.0/build/three.min.js"></script>
-  <script src="https://unpkg.com/d3-geo@3"></script>
-  <script src="https://unpkg.com/three-globe"></script>
+  <script>
+    // Base path for local libraries
+    window.libsBaseUrl = window.libsBaseUrl || './libs';
+    function loadLocalTailwind() {
+      var link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = window.libsBaseUrl + '/tailwind.min.css';
+      document.head.appendChild(link);
+    }
+  </script>
+  <script src="https://cdn.tailwindcss.com" onerror="loadLocalTailwind()"></script>
+  <script src="https://unpkg.com/three@0.152.0/build/three.min.js" onerror="this.onerror=null;this.src=libsBaseUrl+'/three.min.js'"></script>
+  <script src="https://unpkg.com/d3-geo@3" onerror="this.onerror=null;this.src=libsBaseUrl+'/d3-geo.min.js'"></script>
+  <script src="https://unpkg.com/three-globe" onerror="this.onerror=null;this.src=libsBaseUrl+'/three-globe.min.js'"></script>
 </head>
 <body class="bg-gray-900 text-white">
   <div id="globe-container"></div>

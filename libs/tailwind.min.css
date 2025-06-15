@@ -1,0 +1,2 @@
+/* Placeholder for Tailwind CSS */
+body::before { content: 'Tailwind placeholder loaded'; display: none; }
